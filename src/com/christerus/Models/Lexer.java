@@ -13,7 +13,9 @@ public class Lexer {
     private long parsingStarted; // nanotime
     private long lastParseTime = 0;
     private String operands[] = {"+", "-", "/", "%", "=", "==", "!="};
-    private String functions[] = {"print", "ask"};
+    private String defaultFunctions[] = {"print", "ask"};
+    private String functions[] = {"func", "rfunc"};
+    private String keywords[] = {"priv", "pub"};
     private String classes[] = {"class"};
     private String currentBuffer = "";
     private char requiredNext = '\u0000';
@@ -26,6 +28,11 @@ public class Lexer {
 
     // classes
     private boolean awaitingClassName = false;
+
+    // functions
+    private boolean awaitingRFuncName = false;
+    private boolean awaitingFuncName = false;
+    private boolean requiringFunctionScope = false; // function scope is not opened yet
 
     public Lexer(){
         tokens = new ArrayList<>();
@@ -74,18 +81,36 @@ public class Lexer {
                     clearBuffer();
                 }
 
-
-                // Checking for function call and requiring parameters
+                // checking func or rfunc
                 if (Arrays.stream(functions).parallel().anyMatch(currentBuffer::contains)) {
-                    newToken(Token.Type.FUNCTION, currentBuffer);
+                    if(currentBuffer.equals("func"))
+                        awaitFuncName();
+                    else
+                        awaitRFuncName();
+                    clearBuffer();
+                    awaitFuncScope();
+                }
+
+
+                // Checking for default function call and requiring parameters
+                if (Arrays.stream(defaultFunctions).parallel().anyMatch(currentBuffer::contains)) {
+                    newToken(Token.Type.FUNCTION_CALL, currentBuffer);
                     clearBuffer();
                     setRequiredNext('(');
                     readingParameters = true;
                 }
 
+
                 //if (requiredNext == currChar) {
                     // Checking for parantheses
                     if (currChar == '(') {
+
+                        if(awaitingFuncName || awaitingRFuncName){
+                            newToken((awaitingFuncName) ? Token.Type.FUNC : Token.Type.RFUNC, currentBuffer.substring(0, currentBuffer.length() - 1));
+                            readingParameters = true;
+                            endAwaitFuncName();
+                            endAwaitRFuncName();
+                        }
                         newToken(Token.Type.PARENTHESE_OPEN, "(");
                         clearRequiredNext();
                         clearBuffer();
@@ -94,6 +119,9 @@ public class Lexer {
                         clearRequiredNext();
                         clearBuffer();
                         readingParameters = false;
+                        if(requiringFunctionScope){
+                            setRequiredNext('{');
+                        }
                     }
 
                 // Checking for scopes
@@ -101,6 +129,7 @@ public class Lexer {
                     newToken(Token.Type.SCOPE_OPEN, "{");
                     clearRequiredNext();
                     clearBuffer();
+                    endAwaitFuncScope();
                     startScope();
                 } else if (currChar == '}') {
                     newToken(Token.Type.SCOPE_CLOSE, "}");
@@ -220,6 +249,30 @@ public class Lexer {
 
     private void endAwaitClassName(){
         awaitingClassName = false;
+    }
+
+    private void awaitFuncScope(){
+        requiringFunctionScope = true;
+    }
+
+    private void endAwaitFuncScope(){
+        requiringFunctionScope = false;
+    }
+
+    private void awaitFuncName(){
+        awaitingFuncName = true;
+    }
+
+    private void endAwaitFuncName(){
+        awaitingFuncName = false;
+    }
+
+    private void awaitRFuncName(){
+        awaitingRFuncName = true;
+    }
+
+    private void endAwaitRFuncName(){
+        awaitingRFuncName = false;
     }
 
     private void startReadingVariableOrName(){

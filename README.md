@@ -6,15 +6,27 @@ This language is only created for learning purposes and should not be used to bu
 ## Some example pieces
 Keep in mind that this is just some of my ideas thrown together in a codeblock :P
 ```python
-print(20+33);
-75+78/40;
-print("hi");
 
-class <ExampleClass> {
-    <myMessage> = "hello";
-
-    func showMessage(){
-        print(<myMessage> + 3);
+call showMessage("Thomas");
+  
+func showMessage(<message>){
+    call prepareMessage(<message>);
+}
+  
+rfunc prepareMessage(<message>){
+    ret "Hi " + <message>;
+}
+  
+# Not implemented yet (or half)
+class <Greeter> {
+    priv <defaultPrefix> = "hello";
+  
+    pub func showMessage(<message>){
+        print("hi" + <message>);
+    }
+  
+    priv rfunc prepareMessage(<message>){
+        ret <defaultPrefix> + <message>;
     }
 }
 ```

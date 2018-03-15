@@ -20,7 +20,7 @@ public class Main {
                 System.out.println(token.toString());
             }
 
-            System.out.println("Successfully parsed in: " + lexer.getParseTime() + "ms");
+            System.out.println("Successfully parsed " + tokens.size() + " tokens in: " + lexer.getParseTime() + "ms");
 
     }
 }
