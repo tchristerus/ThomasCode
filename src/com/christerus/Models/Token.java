@@ -4,7 +4,7 @@ package com.christerus.Models;
  * Created by thomas on 13/03/2018.
  */
 public class Token {
-    public enum Type {NUM, STRING, VARIABLE_NAME, FUNC, RFUNC, PRIV, PUB, BOOLEAN, FUNCTION_CALL, CLASS,  OPERAND, SEMICOLON, PARENTHESE_OPEN, PARENTHESE_CLOSE, SCOPE_OPEN, SCOPE_CLOSE}
+    public enum Type {NUM, STRING, VARIABLE_NAME, FUNC, RFUNC, KEYWORD, RET, BOOL, FUNCTION_CALL, CLASS,  OPERAND, SEMICOLON, PARENTHESE_OPEN, PARENTHESE_CLOSE, SCOPE_OPEN, SCOPE_CLOSE}
     private Type tokenType;
     private Object value;
 

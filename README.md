@@ -17,7 +17,6 @@ rfunc prepareMessage(<message>){
     ret "Hi " + <message>;
 }
   
-# Not implemented yet (or half)
 class <Greeter> {
     priv <defaultPrefix> = "hello";
   

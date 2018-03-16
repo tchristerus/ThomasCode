@@ -1,5 +1,6 @@
 package com.christerus;
 
+import com.christerus.Models.Executer;
 import com.christerus.Models.Lexer;
 import com.christerus.Models.Token;
 
@@ -22,5 +23,9 @@ public class Main {
 
             System.out.println("Successfully parsed " + tokens.size() + " tokens in: " + lexer.getParseTime() + "ms");
 
+
+        Executer executer = new Executer(tokens);
+        executer.run();
+        executer.debugFunctions();
     }
 }

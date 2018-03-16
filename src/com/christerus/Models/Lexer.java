@@ -17,6 +17,7 @@ public class Lexer {
     private String functions[] = {"func", "rfunc"};
     private String keywords[] = {"priv", "pub"};
     private String classes[] = {"class"};
+    private String returns[] = {"ret"};
     private String currentBuffer = "";
     private char requiredNext = '\u0000';
     private boolean readingString = false;
@@ -33,6 +34,7 @@ public class Lexer {
     private boolean awaitingRFuncName = false;
     private boolean awaitingFuncName = false;
     private boolean requiringFunctionScope = false; // function scope is not opened yet
+    private boolean functionCall = false; // true if the word call is found (so we know the user is calling a function an not creating one
 
     public Lexer(){
         tokens = new ArrayList<>();
@@ -91,6 +93,17 @@ public class Lexer {
                     awaitFuncScope();
                 }
 
+                // checking keywoards
+                if (Arrays.stream(keywords).parallel().anyMatch(currentBuffer::contains)) {
+                    newToken(Token.Type.KEYWORD, currentBuffer);
+                    clearBuffer();
+                }
+
+                // checking return
+                if (Arrays.stream(returns).parallel().anyMatch(currentBuffer::contains)) {
+                    newToken(Token.Type.RET, currentBuffer);
+                    clearBuffer();
+                }
 
                 // Checking for default function call and requiring parameters
                 if (Arrays.stream(defaultFunctions).parallel().anyMatch(currentBuffer::contains)) {
@@ -100,16 +113,26 @@ public class Lexer {
                     readingParameters = true;
                 }
 
+                if(currentBuffer.equals("call")){
+                    setFunctionCall();
+                    awaitFuncName();
+                }
+
 
                 //if (requiredNext == currChar) {
                     // Checking for parantheses
                     if (currChar == '(') {
 
                         if(awaitingFuncName || awaitingRFuncName){
-                            newToken((awaitingFuncName) ? Token.Type.FUNC : Token.Type.RFUNC, currentBuffer.substring(0, currentBuffer.length() - 1));
-                            readingParameters = true;
-                            endAwaitFuncName();
-                            endAwaitRFuncName();
+                            if(functionCall)
+                                newToken(Token.Type.FUNCTION_CALL, currentBuffer.substring(0, currentBuffer.length() - 1));
+                            else
+                                newToken((awaitingFuncName) ? Token.Type.FUNC : Token.Type.RFUNC, currentBuffer.substring(0, currentBuffer.length() - 1));
+
+                                readingParameters = true;
+                                endAwaitFuncName();
+                                endAwaitRFuncName();
+                                endFunctionCall();
                         }
                         newToken(Token.Type.PARENTHESE_OPEN, "(");
                         clearRequiredNext();
@@ -257,6 +280,14 @@ public class Lexer {
 
     private void endAwaitFuncScope(){
         requiringFunctionScope = false;
+    }
+
+    private void setFunctionCall(){
+        functionCall = true;
+    }
+
+    private void endFunctionCall(){
+        functionCall = false;
     }
 
     private void awaitFuncName(){
